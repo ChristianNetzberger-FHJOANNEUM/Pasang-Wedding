@@ -403,7 +403,7 @@
     </div>
     
 
-        <audio id="bgMusic" loop>
+        <audio id="bgMusic" loop preload="auto">
             <source src="music/track01.mp3" type="audio/mpeg">
         </audio>
     
@@ -12282,9 +12282,19 @@
             playBtn.textContent = '⏸️ Pause';
             startAutoplay();
             
-            // Start music (if available)
+            // 🎵 Start music with better buffering handling
             if (bgMusic) {
-                bgMusic.play().catch(e => console.log('Music playback blocked:', e));
+                // Check if music is ready
+                if (bgMusic.readyState >= 2) {
+                    // HAVE_CURRENT_DATA or better - can play now
+                    bgMusic.play().catch(e => console.log('Music playback blocked:', e));
+                } else {
+                    // Wait for music to load enough data
+                    bgMusic.addEventListener('canplay', function startMusic() {
+                        bgMusic.play().catch(e => console.log('Music playback blocked:', e));
+                        bgMusic.removeEventListener('canplay', startMusic);
+                    }, { once: true });
+                }
             }
             
             // Hide controls after 3 seconds
@@ -12299,7 +12309,7 @@
         // Initialize display
         updateDisplay();
         
-        // Generated: 2026-03-08 15:02
+        // Generated: 2026-03-08 20:55
     </script>
 </body>
 </html>
